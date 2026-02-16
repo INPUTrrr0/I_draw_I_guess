@@ -1,17 +1,26 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { useTimer } from '../hooks/useTimer';
 import { useSpeech } from '../hooks/useSpeech';
 import DrawingGrid, { DrawingGridRef } from './DrawingGrid';
+import { combineCellsIntoGrid } from '../utils/canvasUtils';
 
 const GamePhase = () => {
   const { state, dispatch } = useGame();
   const { timeLeft, startTimer } = useTimer();
   const { speak } = useSpeech({ rate: 0.9, pitch: 1, volume: 1 });
   const drawingGridRef = useRef<DrawingGridRef>(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const currentWord = state.words[state.currentWordIndex];
   const isDigitalMode = state.config?.drawingMode === 'digital';
+
+  // Detect mobile viewport changes
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Speak the word when it appears
   useEffect(() => {
@@ -22,15 +31,38 @@ const GamePhase = () => {
 
   useEffect(() => {
     // Start 3-second timer for current word
-    startTimer(3, () => {
-      // Save canvas when transitioning to next word or recall phase
-      if (isDigitalMode && drawingGridRef.current && state.currentWordIndex === 19) {
+    startTimer(3, async () => {
+      if (isDigitalMode && drawingGridRef.current) {
         const canvasDataUrl = drawingGridRef.current.getCanvasDataUrl();
-        dispatch({ type: 'SAVE_CANVAS', payload: canvasDataUrl });
+
+        if (isMobile) {
+          // On mobile: save individual cell drawing
+          dispatch({
+            type: 'SAVE_DRAWING',
+            payload: { index: state.currentWordIndex, dataUrl: canvasDataUrl },
+          });
+
+          // If this is the last word, combine all cells into grid
+          if (state.currentWordIndex === 19) {
+            try {
+              const updatedDrawings = [...state.drawings];
+              updatedDrawings[19] = canvasDataUrl;
+              const combinedGrid = await combineCellsIntoGrid(updatedDrawings);
+              dispatch({ type: 'SAVE_CANVAS', payload: combinedGrid });
+            } catch (error) {
+              console.error('Failed to combine cell images:', error);
+            }
+          }
+        } else {
+          // On desktop: save full canvas only at the end
+          if (state.currentWordIndex === 19) {
+            dispatch({ type: 'SAVE_CANVAS', payload: canvasDataUrl });
+          }
+        }
       }
       dispatch({ type: 'NEXT_WORD' });
     });
-  }, [state.currentWordIndex, dispatch, startTimer, isDigitalMode]);
+  }, [state.currentWordIndex, state.drawings, dispatch, startTimer, isDigitalMode, isMobile]);
 
   const gridPosition = state.currentWordIndex + 1;
   const row = Math.floor(state.currentWordIndex / 5) + 1;
@@ -77,9 +109,15 @@ const GamePhase = () => {
         {isDigitalMode ? (
           <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
             <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">
-              Draw each word in its corresponding grid cell
+              {isMobile
+                ? 'Draw this word in the canvas below'
+                : 'Draw each word in its corresponding grid cell'}
             </h3>
-            <DrawingGrid ref={drawingGridRef} />
+            <DrawingGrid
+              ref={drawingGridRef}
+              singleCellMode={isMobile}
+              cellIndex={state.currentWordIndex}
+            />
           </div>
         ) : (
           <div className="bg-white rounded-2xl shadow-xl p-12 md:p-16 text-center">

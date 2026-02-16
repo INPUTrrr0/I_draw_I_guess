@@ -1,13 +1,21 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useGame } from '../context/GameContext';
 
 const RecallPhase = () => {
   const { state, dispatch } = useGame();
   const firstInputRef = useRef<HTMLInputElement>(null);
+  const [zoomedCell, setZoomedCell] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
     // Auto-focus first input
     firstInputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const handleInputChange = (index: number, value: string) => {
@@ -29,6 +37,31 @@ const RecallPhase = () => {
     }
   };
 
+  const handleCanvasClick = (e: React.MouseEvent<HTMLImageElement>) => {
+    if (!isMobile) return; // Only enable zoom on mobile
+
+    const img = e.currentTarget;
+    const rect = img.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Calculate which cell was clicked
+    // Grid is 5 columns x 4 rows
+    const cellWidth = rect.width / 5;
+    const cellHeight = rect.height / 4;
+    const col = Math.floor(x / cellWidth);
+    const row = Math.floor(y / cellHeight);
+    const cellIndex = row * 5 + col;
+
+    if (cellIndex >= 0 && cellIndex < 20) {
+      setZoomedCell(cellIndex);
+    }
+  };
+
+  const closeZoom = () => {
+    setZoomedCell(null);
+  };
+
   const isDigitalMode = state.config?.drawingMode === 'digital';
 
   return (
@@ -39,11 +72,19 @@ const RecallPhase = () => {
           <div className="bg-white rounded-2xl shadow-xl p-4 mb-6">
             <h3 className="text-lg font-bold text-gray-800 mb-3 text-center">
               Your Drawings
+              {isMobile && (
+                <span className="block text-sm font-normal text-gray-500 mt-1">
+                  Tap on any cell to zoom in
+                </span>
+              )}
             </h3>
             <img
               src={state.canvasImage}
               alt="Your canvas drawings"
-              className="w-full h-auto border-2 border-gray-300 rounded-lg"
+              onClick={handleCanvasClick}
+              className={`w-full h-auto border-2 border-gray-300 rounded-lg ${
+                isMobile ? 'cursor-pointer' : ''
+              }`}
             />
           </div>
         )}
@@ -88,6 +129,36 @@ const RecallPhase = () => {
             Submit Answers
           </button>
         </div>
+
+        {/* Zoom Modal for Mobile */}
+        {isMobile && zoomedCell !== null && state.drawings[zoomedCell] && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+            onClick={closeZoom}
+          >
+            <div
+              className="bg-white rounded-xl p-4 max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-lg font-bold text-gray-800">
+                  Cell #{zoomedCell + 1}
+                </h3>
+                <button
+                  onClick={closeZoom}
+                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                >
+                  ×
+                </button>
+              </div>
+              <img
+                src={state.drawings[zoomedCell]!}
+                alt={`Cell ${zoomedCell + 1}`}
+                className="w-full h-auto border-2 border-gray-300 rounded-lg"
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
