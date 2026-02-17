@@ -64,6 +64,13 @@ const GamePhase = () => {
     });
   }, [state.currentWordIndex, state.drawings, dispatch, startTimer, isDigitalMode, isMobile]);
 
+  // Clear canvas when moving to next word in mobile mode
+  useEffect(() => {
+    if (isMobile && isDigitalMode && drawingGridRef.current && state.currentWordIndex > 0) {
+      drawingGridRef.current.clearCanvas();
+    }
+  }, [state.currentWordIndex, isMobile, isDigitalMode]);
+
   const gridPosition = state.currentWordIndex + 1;
   const row = Math.floor(state.currentWordIndex / 5) + 1;
   const col = (state.currentWordIndex % 5) + 1;

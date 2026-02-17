@@ -3,6 +3,7 @@ import { useCanvas } from '../hooks/useCanvas';
 
 export interface DrawingGridRef {
   getCanvasDataUrl: () => string;
+  clearCanvas: () => void;
 }
 
 interface DrawingGridProps {
@@ -26,6 +27,7 @@ const DrawingGrid = forwardRef<DrawingGridRef, DrawingGridProps>((props, ref) =>
 
   useImperativeHandle(ref, () => ({
     getCanvasDataUrl,
+    clearCanvas,
   }));
 
   const row = Math.floor(cellIndex / 5) + 1;
