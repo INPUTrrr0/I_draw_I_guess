@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { useGame } from '../context/GameContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useTimer } from '../hooks/useTimer';
 import { useSpeech } from '../hooks/useSpeech';
 import DrawingGrid, { DrawingGridRef } from './DrawingGrid';
+import CircularTimer from './CircularTimer';
 import { combineCellsIntoGrid } from '../utils/canvasUtils';
+import { TIME_DURATIONS } from '../types/game.types';
 
 const GamePhase = () => {
   const { state, dispatch } = useGame();
+  const { t } = useLanguage();
   const { timeLeft, startTimer } = useTimer();
   const { speak } = useSpeech({ rate: 0.9, pitch: 1, volume: 1 });
   const drawingGridRef = useRef<DrawingGridRef>(null);
@@ -14,6 +18,9 @@ const GamePhase = () => {
 
   const currentWord = state.words[state.currentWordIndex];
   const isDigitalMode = state.config?.drawingMode === 'digital';
+  const timeDuration = state.config?.timeDifficulty
+    ? TIME_DURATIONS[state.config.timeDifficulty]
+    : 3;
 
   // Detect mobile viewport changes
   useEffect(() => {
@@ -30,8 +37,8 @@ const GamePhase = () => {
   }, [currentWord?.text, speak]);
 
   useEffect(() => {
-    // Start 3-second timer for current word
-    startTimer(3, async () => {
+    // Start timer for current word based on difficulty
+    startTimer(timeDuration, async () => {
       if (isDigitalMode && drawingGridRef.current) {
         const canvasDataUrl = drawingGridRef.current.getCanvasDataUrl();
 
@@ -62,7 +69,7 @@ const GamePhase = () => {
       }
       dispatch({ type: 'NEXT_WORD' });
     });
-  }, [state.currentWordIndex, state.drawings, dispatch, startTimer, isDigitalMode, isMobile]);
+  }, [state.currentWordIndex, state.drawings, dispatch, startTimer, isDigitalMode, isMobile, timeDuration]);
 
   // Clear canvas when moving to next word in mobile mode
   useEffect(() => {
@@ -82,10 +89,9 @@ const GamePhase = () => {
         <div className="mb-8">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-semibold text-gray-700">
-              Word {state.currentWordIndex + 1} of 20
-            </span>
-            <span className="text-sm font-semibold text-orange-600">
-              {timeLeft}s
+              {t.game.wordProgress
+                .replace('{current}', (state.currentWordIndex + 1).toString())
+                .replace('{total}', '20')}
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
@@ -100,14 +106,19 @@ const GamePhase = () => {
         <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-12 mb-8">
           <div className="text-center">
             <p className="text-gray-600 text-sm mb-2 flex items-center justify-center gap-2">
-              <span>Memorize and draw:</span>
-              <span className="text-orange-600" title="Voiceover enabled">🔊</span>
+              <span>{t.game.memorizeAndDraw}</span>
+              <span className="text-orange-600" title={t.game.voiceoverEnabled}>
+                🔊
+              </span>
             </p>
-            <h2 className="text-5xl md:text-7xl font-bold text-transparent bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text animate-fade-in">
-              {currentWord?.text}
-            </h2>
+            <div className="flex items-center justify-center gap-6 mb-4">
+              <h2 className="text-5xl md:text-7xl font-bold text-transparent bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text animate-fade-in">
+                {currentWord?.text}
+              </h2>
+              <CircularTimer timeLeft={timeLeft} totalTime={timeDuration} />
+            </div>
             <p className="text-gray-500 text-sm mt-4">
-              Position: Row {row}, Column {col} (Cell #{gridPosition})
+              {t.game.position} {t.game.row} {row}, {t.game.column} {col} ({t.game.cell} #{gridPosition})
             </p>
           </div>
         </div>
@@ -116,9 +127,7 @@ const GamePhase = () => {
         {isDigitalMode ? (
           <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
             <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">
-              {isMobile
-                ? 'Draw this word in the canvas below'
-                : 'Draw each word in its corresponding grid cell'}
+              {isMobile ? t.game.drawInstruction : t.game.drawInstructions}
             </h3>
             <DrawingGrid
               ref={drawingGridRef}
@@ -128,7 +137,7 @@ const GamePhase = () => {
           </div>
         ) : (
           <div className="bg-white rounded-2xl shadow-xl p-12 md:p-16 text-center">
-            <p className="text-gray-500 text-sm mb-4">Draw on your paper</p>
+            <p className="text-gray-500 text-sm mb-4">{t.game.drawOnPaper}</p>
           </div>
         )}
       </div>

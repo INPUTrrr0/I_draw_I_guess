@@ -1,11 +1,14 @@
 import { GameProvider } from './context/GameContext'
+import { LanguageProvider } from './context/LanguageContext'
 import GameContainer from './components/GameContainer'
 
 function App() {
   return (
-    <GameProvider>
-      <GameContainer />
-    </GameProvider>
+    <LanguageProvider>
+      <GameProvider>
+        <GameContainer />
+      </GameProvider>
+    </LanguageProvider>
   )
 }
 

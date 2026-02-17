@@ -17,7 +17,11 @@ export const initialState: GameState = {
 export const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'START_GAME': {
-      const words = selectRandomWords(action.payload.difficulty);
+      // Use custom words if provided, otherwise select from database
+      const words = action.payload.customWords
+        ? action.payload.customWords.map((text, index) => ({ text: text.trim(), index }))
+        : selectRandomWords(action.payload.difficulty);
+
       return {
         ...state,
         phase: 'game',

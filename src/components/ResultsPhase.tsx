@@ -1,8 +1,10 @@
 import { useGame } from '../context/GameContext';
+import { useLanguage } from '../context/LanguageContext';
 import jsPDF from 'jspdf';
 
 const ResultsPhase = () => {
   const { state, dispatch } = useGame();
+  const { t } = useLanguage();
 
   const handleRestart = () => {
     dispatch({ type: 'RESTART_GAME' });
@@ -135,12 +137,14 @@ const ResultsPhase = () => {
       <div className="max-w-5xl mx-auto">
         {/* Score Display */}
         <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-12 mb-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Your Results</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            {t.results.scoreText.replace('{score}', state.score.toString()).replace('{total}', '20')}
+          </h2>
           <div className={`text-6xl md:text-8xl font-bold ${getScoreColor()} mb-4`}>
             {state.score}/20
           </div>
           <p className="text-xl md:text-2xl font-semibold text-gray-700 mb-2">
-            {percentage}% Correct
+            {percentage}% {t.results.correct}
           </p>
           <p className="text-lg text-gray-600">{getScoreMessage()}</p>
         </div>
@@ -148,7 +152,7 @@ const ResultsPhase = () => {
         {/* Comparison Grid */}
         <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-8">
           <h3 className="text-xl font-bold text-gray-800 mb-6 text-center">
-            Answer Breakdown
+            {t.results.correctAnswer}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {state.results.map((result, i) => {
@@ -170,7 +174,7 @@ const ResultsPhase = () => {
                   </div>
                   {!result.isCorrect && (
                     <div className="text-sm text-gray-600">
-                      Your answer:{' '}
+                      {t.results.yourAnswer}:{' '}
                       <span className="italic">
                         {result.input || '(empty)'}
                       </span>
@@ -188,13 +192,13 @@ const ResultsPhase = () => {
             onClick={handleSaveResults}
             className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 px-6 rounded-lg font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
           >
-            Save as PDF
+            {t.results.downloadPDF}
           </button>
           <button
             onClick={handleRestart}
             className="flex-1 bg-gradient-to-r from-orange-600 to-amber-600 text-white py-4 px-6 rounded-lg font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
           >
-            Play Again
+            {t.results.playAgain}
           </button>
         </div>
       </div>

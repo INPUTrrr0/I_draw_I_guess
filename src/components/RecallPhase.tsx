@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useGame } from '../context/GameContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const RecallPhase = () => {
   const { state, dispatch } = useGame();
+  const { t } = useLanguage();
   const firstInputRef = useRef<HTMLInputElement>(null);
   const [zoomedCell, setZoomedCell] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -71,10 +73,10 @@ const RecallPhase = () => {
         {isDigitalMode && state.canvasImage && (
           <div className="bg-white rounded-2xl shadow-xl p-4 mb-6">
             <h3 className="text-lg font-bold text-gray-800 mb-3 text-center">
-              Your Drawings
+              {t.recall.title}
               {isMobile && (
                 <span className="block text-sm font-normal text-gray-500 mt-1">
-                  Tap on any cell to zoom in
+                  {t.recall.tapToZoom}
                 </span>
               )}
             </h3>
@@ -91,10 +93,10 @@ const RecallPhase = () => {
 
         <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-12">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-2 text-gray-800">
-            Recall the Words
+            {t.recall.title}
           </h2>
           <p className="text-center text-gray-600 mb-8">
-            Type the words in the order they appeared
+            {t.recall.instruction}
           </p>
 
           {/* Input Grid */}
@@ -126,7 +128,7 @@ const RecallPhase = () => {
             onClick={handleSubmit}
             className="w-full bg-gradient-to-r from-orange-600 to-amber-600 text-white py-4 px-6 rounded-lg font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
           >
-            Submit Answers
+            {t.recall.submitButton}
           </button>
         </div>
 
@@ -142,7 +144,7 @@ const RecallPhase = () => {
             >
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-lg font-bold text-gray-800">
-                  Cell #{zoomedCell + 1}
+                  {t.game.cell} #{zoomedCell + 1}
                 </h3>
                 <button
                   onClick={closeZoom}
@@ -153,7 +155,7 @@ const RecallPhase = () => {
               </div>
               <img
                 src={state.drawings[zoomedCell]!}
-                alt={`Cell ${zoomedCell + 1}`}
+                alt={`${t.game.cell} ${zoomedCell + 1}`}
                 className="w-full h-auto border-2 border-gray-300 rounded-lg"
               />
             </div>

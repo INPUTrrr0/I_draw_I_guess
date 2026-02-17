@@ -1,5 +1,6 @@
 import { forwardRef, useImperativeHandle } from 'react';
 import { useCanvas } from '../hooks/useCanvas';
+import { useLanguage } from '../context/LanguageContext';
 
 export interface DrawingGridRef {
   getCanvasDataUrl: () => string;
@@ -13,6 +14,7 @@ interface DrawingGridProps {
 
 const DrawingGrid = forwardRef<DrawingGridRef, DrawingGridProps>((props, ref) => {
   const { singleCellMode = false, cellIndex = 0 } = props;
+  const { t } = useLanguage();
 
   // Single cell: square canvas (300x300)
   // Full grid: 600x480 (4x5 grid)
@@ -38,10 +40,10 @@ const DrawingGrid = forwardRef<DrawingGridRef, DrawingGridProps>((props, ref) =>
       {singleCellMode && (
         <div className="text-center mb-4">
           <p className="text-lg font-semibold text-gray-700">
-            Drawing Cell #{cellIndex + 1}
+            {t.game.cell} #{cellIndex + 1}
           </p>
           <p className="text-sm text-gray-500">
-            Row {row}, Column {col}
+            {t.game.row} {row}, {t.game.column} {col}
           </p>
         </div>
       )}
@@ -56,7 +58,7 @@ const DrawingGrid = forwardRef<DrawingGridRef, DrawingGridProps>((props, ref) =>
           onClick={clearCanvas}
           className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors shadow-lg font-semibold text-sm"
         >
-          Clear
+          {t.common.clear}
         </button>
       </div>
     </div>

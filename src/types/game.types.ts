@@ -1,11 +1,20 @@
-export type Difficulty = 'easy' | 'medium' | 'hard';
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'custom';
 export type DrawingMode = 'physical' | 'digital';
+export type TimeDifficulty = 'dumb' | 'normal' | 'hell';
 export type GamePhase = 'landing' | 'game' | 'recall' | 'results';
 
 export interface GameConfig {
   difficulty: Difficulty;
   drawingMode: DrawingMode;
+  timeDifficulty: TimeDifficulty;
+  customWords?: string[];
 }
+
+export const TIME_DURATIONS: Record<TimeDifficulty, number> = {
+  dumb: 5,
+  normal: 3,
+  hell: 1,
+};
 
 export interface Word {
   text: string;
