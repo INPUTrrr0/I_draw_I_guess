@@ -1,4 +1,4 @@
-import { GameState, GameAction } from '../types/game.types';
+import { GameState, GameAction, Difficulty } from '../types/game.types';
 import { selectRandomWords } from '../data/words';
 import { calculateScore } from '../utils/scoreCalculator';
 
@@ -20,7 +20,7 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       // Use custom words if provided, otherwise select from database
       const words = action.payload.customWords
         ? action.payload.customWords.map((text, index) => ({ text: text.trim(), index }))
-        : selectRandomWords(action.payload.difficulty);
+        : selectRandomWords(action.payload.difficulty as Exclude<Difficulty, 'custom'>);
 
       return {
         ...state,
