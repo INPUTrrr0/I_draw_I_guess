@@ -31,7 +31,7 @@ export const wordDatabase = {
   ]
 };
 
-export const selectRandomWords = (difficulty: Difficulty): Word[] => {
+export const selectRandomWords = (difficulty: Exclude<Difficulty, 'custom'>): Word[] => {
   const pool = wordDatabase[difficulty];
   const shuffled = [...pool].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, 20).map((text, index) => ({ text, index }));
