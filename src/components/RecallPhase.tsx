@@ -133,13 +133,35 @@ const RecallPhase = () => {
               ))}
             </div>
           ) : (
-            // Desktop: Inputs grouped in 4 rows of 5
-            <div className="space-y-6 mb-8">
+            // Desktop: Row of images, then row of inputs, alternating
+            <div className="space-y-8 mb-8">
               {[0, 1, 2, 3].map((rowIndex) => (
                 <div key={rowIndex} className="space-y-3">
                   <div className="text-sm font-semibold text-gray-600 text-center">
                     Row {rowIndex + 1}
                   </div>
+                  {/* Row of drawings */}
+                  {isDigitalMode && (
+                    <div className="grid grid-cols-5 gap-3">
+                      {Array.from({ length: 5 }, (_, colIndex) => {
+                        const i = rowIndex * 5 + colIndex;
+                        return (
+                          <div key={`img-${i}`} className="flex flex-col">
+                            {state.drawings[i] ? (
+                              <img
+                                src={state.drawings[i]!}
+                                alt={`Drawing ${i + 1}`}
+                                className="w-full h-auto border-2 border-gray-300 rounded-lg"
+                              />
+                            ) : (
+                              <div className="w-full aspect-square border-2 border-gray-200 rounded-lg bg-gray-50" />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {/* Row of input fields */}
                   <div className="grid grid-cols-5 gap-3">
                     {Array.from({ length: 5 }, (_, colIndex) => {
                       const i = rowIndex * 5 + colIndex;
