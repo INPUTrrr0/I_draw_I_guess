@@ -99,29 +99,76 @@ const RecallPhase = () => {
             {t.recall.instruction}
           </p>
 
-          {/* Input Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-8">
-            {Array.from({ length: 20 }, (_, i) => (
-              <div key={i} className="flex flex-col">
-                <label
-                  htmlFor={`input-${i}`}
-                  className="text-xs font-semibold text-gray-500 mb-1"
-                >
-                  #{i + 1}
-                </label>
-                <input
-                  ref={i === 0 ? firstInputRef : null}
-                  id={`input-${i}`}
-                  type="text"
-                  value={state.userAnswers[i] || ''}
-                  onChange={(e) => handleInputChange(i, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(e, i)}
-                  className="border-2 border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
-                  placeholder={`Word ${i + 1}`}
-                />
-              </div>
-            ))}
-          </div>
+          {/* Input Grid - Mobile: single grid, Desktop: grouped by rows */}
+          {isMobile ? (
+            // Mobile: Single grid with individual drawings above each input
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
+              {Array.from({ length: 20 }, (_, i) => (
+                <div key={i} className="flex flex-col">
+                  {/* Show individual drawing in mobile mode */}
+                  {isDigitalMode && state.drawings[i] && (
+                    <img
+                      src={state.drawings[i]!}
+                      alt={`Drawing ${i + 1}`}
+                      className="w-full h-auto border-2 border-gray-300 rounded-lg mb-2"
+                    />
+                  )}
+                  <label
+                    htmlFor={`input-${i}`}
+                    className="text-xs font-semibold text-gray-500 mb-1"
+                  >
+                    #{i + 1}
+                  </label>
+                  <input
+                    ref={i === 0 ? firstInputRef : null}
+                    id={`input-${i}`}
+                    type="text"
+                    value={state.userAnswers[i] || ''}
+                    onChange={(e) => handleInputChange(i, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(e, i)}
+                    className="border-2 border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
+                    placeholder={`Word ${i + 1}`}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            // Desktop: Inputs grouped in 4 rows of 5
+            <div className="space-y-6 mb-8">
+              {[0, 1, 2, 3].map((rowIndex) => (
+                <div key={rowIndex} className="space-y-3">
+                  <div className="text-sm font-semibold text-gray-600 text-center">
+                    Row {rowIndex + 1}
+                  </div>
+                  <div className="grid grid-cols-5 gap-3">
+                    {Array.from({ length: 5 }, (_, colIndex) => {
+                      const i = rowIndex * 5 + colIndex;
+                      return (
+                        <div key={i} className="flex flex-col">
+                          <label
+                            htmlFor={`input-${i}`}
+                            className="text-xs font-semibold text-gray-500 mb-1"
+                          >
+                            #{i + 1}
+                          </label>
+                          <input
+                            ref={i === 0 ? firstInputRef : null}
+                            id={`input-${i}`}
+                            type="text"
+                            value={state.userAnswers[i] || ''}
+                            onChange={(e) => handleInputChange(i, e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, i)}
+                            className="border-2 border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
+                            placeholder={`Word ${i + 1}`}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Submit Button */}
           <button
